@@ -201,13 +201,19 @@ def hex_to_rgb(h):
     h = h.lstrip("#")
     return RGBColor(int(h[0:2],16), int(h[2:4],16), int(h[4:6],16))
 
+def get_gemini_key():
+    try:
+        return st.secrets["GEMINI_API_KEY"]
+    except Exception:
+        return os.environ.get("GEMINI_API_KEY", "")
+
 def get_ai_suggestion(slide):
     """Ask Gemini to suggest layout + typo fixes for a slide."""
-    api_key = st.session_state.get("gemini_api_key") or os.environ.get("GEMINI_API_KEY", "")
+    api_key = get_gemini_key()
     if not api_key:
         return {
             "suggested_layout": "Clean bullets",
-            "layout_reason": "Add your Gemini API key in the sidebar to get AI suggestions.",
+            "layout_reason": "Gemini API key not configured. Add GEMINI_API_KEY to Streamlit secrets.",
             "typo_fixes": [],
             "design_tips": ["Use consistent font sizes", "Left-align body text"]
         }
@@ -310,19 +316,7 @@ def render_sidebar():
             st.markdown(f'<div class="{style}">{icon} &nbsp; <b>{num}.</b> {label}</div>', unsafe_allow_html=True)
 
         st.markdown("---")
-        st.markdown("**Gemini API key**")
-        api_key_input = st.text_input(
-            "Gemini API key",
-            type="password",
-            placeholder="AIza...",
-            label_visibility="collapsed",
-            value=st.session_state.get("gemini_api_key", "")
-        )
-        if api_key_input:
-            st.session_state["gemini_api_key"] = api_key_input
-            st.markdown('<span style="color:#34d399;font-size:12px;">✓ Key saved</span>', unsafe_allow_html=True)
-        else:
-            st.markdown('<span style="color:#6b7280;font-size:11px;">Get a free key at ai.google.dev</span>', unsafe_allow_html=True)
+        st.markdown('<span style="color:#6b7280;font-size:11px;">⚡ Powered by Google Gemini</span>', unsafe_allow_html=True)
         st.markdown("---")
         if st.session_state.slides_data:
             st.markdown(f"**{len(st.session_state.slides_data)} slides** loaded")
